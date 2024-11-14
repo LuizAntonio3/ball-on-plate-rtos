@@ -7,6 +7,8 @@
 extern "C" {
 #endif
 
+int water();
+
 int tiny_setup(TinySolver** solverp,
                 tinyMatrix Adyn, tinyMatrix Bdyn, tinyMatrix Q, tinyMatrix R, 
                 tinytype rho, int nx, int nu, int N,

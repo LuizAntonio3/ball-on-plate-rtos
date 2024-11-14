@@ -3,6 +3,9 @@
 #include "controller.h"
 #include "kalmanFilter.h"
 #include "stateSpaceMatrices.h"
+#include "tinympc/tiny_api.hpp"
+
+#define USE_MPC
 
 ServoControl servos(23, 19);
 TouchScreen ts(27, 26, 32, 33, 25);
@@ -14,8 +17,16 @@ KalmanFilter yFilter(sys.A, sys.B, sys.C, 0.01, 200, 150);
 
 BLA::Matrix<1,2> hInfSatGains = {17.8954, 10.0515};
 
+tinytype Q_data[NSTATES] = {10.0, 1.0};
+tinytype R_data[NINPUTS] = {1.0};
+
+#ifdef USE_MPC
+Controller xController(sys.A, sys.B, Q_data, R_data);
+Controller yController(sys.A, sys.B, Q_data, R_data);
+#else
 Controller xController(hInfSatGains);
 Controller yController(hInfSatGains);
+#endif
 
 float angleX = 0;
 float angleY = 0;
