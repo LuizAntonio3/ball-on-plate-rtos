@@ -1,22 +1,7 @@
-#include "freertos/projdefs.h"
-#include "freertos/portmacro.h"
 #include <Arduino.h>
 #include "touchScreen.h"
 
-TouchScreen::TouchScreen(
-  int upperLeft, 
-  int upperRight, 
-  int lowerLeft, 
-  int lowerRight, 
-  int sensorPin,
-  QueueHandle_t xInputQueue,
-  QueueHandle_t yInputQueue,
-  QueueHandle_t xInputOutputQueue,
-  QueueHandle_t yInputOutputQueue,
-  EventGroupHandle_t inputEventGroup,
-  EventBits_t xIputEventBit,
-  EventBits_t yInputEventBit
-){
+TouchScreen::TouchScreen(int upperLeft, int upperRight, int lowerLeft, int lowerRight, int sensorPin){
 
   //Set the pins according to the corners of the screen
   this->_upperLeftPin = upperLeft;
@@ -28,82 +13,12 @@ TouchScreen::TouchScreen(
   this->_sensorPin = sensorPin;
 
   this->setPins();
-
-  //RTOS
-
-  this->xControlInputQueue = xInputQueue;
-  this->yControlInputQueue = yInputQueue;
-  this->controlInputEvent = inputEventGroup;
-  this->xIputEventBit = xIputEventBit;
-  this->yInputEventBit = yInputEventBit;
   
 };
 
 TouchScreen::~TouchScreen(){/* 
   (づ｡◕‿‿◕｡)づ no destructor
 */}
-
-void TouchScreen::run(){
-
-  while(1){
-
-    screenCoordinates coords;
-    screenCoordinatesCm coordsCm;
-
-    inputAndOutput xInputOutput;
-    inputAndOutput yInputOutput;
-
-    float xInput;
-    float yInput;
-
-    //Wait for control input to be updated
-    EventBits_t eventBit = xEventGroupWaitBits(
-      this->controlInputEvent,
-      (this->yInputEventBit | this->xIputEventBit), 
-      pdTRUE, 
-      pdTRUE, 
-      portMAX_DELAY);
-
-    if(eventBit){
-      xQueueReceive(this->xControlInputQueue, &xInput, 0);
-      xQueueReceive(this->yControlInputQueue, &yInput, 0);
-
-      //Read touchScreen
-      coords = this->getCoordinates();
-      coordsCm = this->getCoordinatesCm(coords.x, coords.y);
-
-      xInputOutput.input = coords.x;
-      xInputOutput.output = xInput;
-
-      yInputOutput.input = coords.y;
-      yInputOutput.output = yInput;
-
-      //Send x data to x queue
-      xQueueSend(this->xInputOutputQueue, &xInputOutput, portMAX_DELAY);
-
-      //Send y data to y queue
-      xQueueSend(this->yInputOutputQueue, &yInputOutput, portMAX_DELAY);
-    }
-  }
-
-}
-
-void TouchScreen::start(){
-  xTaskCreate(
-    tsTask, 
-    "TouchScreenTask", 
-    3000,
-    this, 
-    tskIDLE_PRIORITY, 
-    NULL);
-}
-
-void TouchScreen::tsTask(void *params){
-
-  TouchScreen* self = static_cast<TouchScreen*> (params);
-  self->run();
-
-}
 
 screenCoordinates TouchScreen::getCoordinates(){ 
 
@@ -141,8 +56,7 @@ int TouchScreen::readCoordinate(String coordinate){
     digitalWrite(this->_upperRightPin, HIGH); 
   }
   
-  // delay(this->_interval);
-  vTaskDelay(pdMS_TO_TICKS(this->_interval));
+  delay(this->_interval);
   return analogRead(this->_sensorPin);
 };
 

@@ -16,11 +16,6 @@ struct screenCoordinatesCm{
   float yCm = 0;
 };
 
-struct inputAndOutput{
-  float input;
-  float output;
-};
-
 class TouchScreen{
 
   private:
@@ -54,46 +49,12 @@ class TouchScreen{
 
   public:
 
-    TouchScreen(
-      int upperLeft, 
-      int upperRight, 
-      int lowerLeft, 
-      int lowerRight, 
-      int sensorPin,
-      QueueHandle_t xInputQueue,
-      QueueHandle_t yInputQueue,
-      QueueHandle_t xInputOutputQueue,
-      QueueHandle_t yInputOutputQueue,
-      EventGroupHandle_t inputEventGroup,
-      EventBits_t xIputEventBit,
-      EventBits_t yInputEventBit
-    );
-
+    TouchScreen(int upperLeft, int upperRight, int lowerLeft, int lowerRight, int sensorPin);
     ~TouchScreen();
 
     screenCoordinates getCoordinates();
     screenCoordinatesCm getCoordinatesCm(float xValue, float yValue);
     void setSamplingTime(int milliseconds);
     bool screenUpdated();
-
-
-    //RTOS
-
-    //To get info
-    QueueHandle_t xControlInputQueue;
-    QueueHandle_t yControlInputQueue;
-
-    QueueHandle_t xInputOutputQueue;
-    QueueHandle_t yInputOutputQueue;
-
-    //Event
-    EventGroupHandle_t controlInputEvent;
-    EventBits_t xIputEventBit;
-    EventBits_t yInputEventBit;
-
-    static void tsTask(void* params);
-    void run();
-    void start();
-
 };
 #endif // !TOUCHSCREEN_H

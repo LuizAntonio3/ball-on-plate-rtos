@@ -1,9 +1,8 @@
-#include "freertos/portmacro.h"
 #include "kalmanFilter.h"
 
 static const int systemOrder = 2;
 
-KalmanFilter::KalmanFilter(Matrix<systemOrder, systemOrder> A, Matrix<systemOrder,1> B, Matrix<1, systemOrder> C, float qValue1, float qValue2, float rValue, QueueHandle_t inputOutputQueue, QueueHandle_t statesQueue, char* taskName){
+KalmanFilter::KalmanFilter(BLA::Matrix<systemOrder, systemOrder> A, BLA::Matrix<systemOrder,1> B, BLA::Matrix<1, systemOrder> C, float qValue1, float qValue2, float rValue){
   
   this->A = A;
   this->B = B;
@@ -14,51 +13,11 @@ KalmanFilter::KalmanFilter(Matrix<systemOrder, systemOrder> A, Matrix<systemOrde
     0, qValue2
   };
   this->R = {rValue};
-
-  this->inputOutputQueue = inputOutputQueue;
-  this->statesQueue = statesQueue;
-  this->taskName = taskName;
 };
 
 KalmanFilter::~KalmanFilter(){};
 
-void KalmanFilter::kfTask(void *params){
-  KalmanFilter* self = static_cast<KalmanFilter*> (params);
-  self->run();
-}
-
-void KalmanFilter::run(){
-
-  inputAndOutput inputOutput;
-
-  while(1){
-
-    //Wait for inputOutputQueue
-    if(xQueueReceive(this->inputOutputQueue, &inputOutput, portMAX_DELAY)){
-      //Filter and estimate
-      float position = inputOutput.input * 0.01; //meter
-      float controlInput = inputOutput.output;
-      Matrix<systemOrder,1> states = this->kalman(controlInput, position);
-
-      //Send data to controllerQueue
-      xQueueSend(this->statesQueue, &states, portMAX_DELAY);
-    };
-
-  }
-
-}
-
-void KalmanFilter::start(){
-  xTaskCreate(
-    kfTask, 
-    this->taskName, 
-    3000,
-    this, 
-    tskIDLE_PRIORITY+1, 
-    NULL);
-}
-
-Matrix<systemOrder, 1> KalmanFilter::kalman(float input, float output){
+BLA::Matrix<systemOrder, 1> KalmanFilter::kalman(float input, float output){
 
   //a priori
   this->x_priori = this->A * this->x_hat + this->B * input;
