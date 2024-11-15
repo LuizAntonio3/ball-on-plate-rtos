@@ -1,6 +1,8 @@
 #include "controller.h"
-#include "tinympc/tiny_api.hpp"
+#include "tiny_api.hpp"
 
+extern double WCET;
+extern double mpcTime;
 
 Controller::Controller(BLA::Matrix<1, systemOrder> gains){
   this->controllerType = ControllerType::STATE_FEEDBACK;
@@ -37,7 +39,10 @@ Controller::Controller(BLA::Matrix<systemOrder, systemOrder> A, BLA::Matrix<syst
   work = this->solver->work;
 
   // Reference
-  work->Xref  << 0.0, 0.0; // TODO: check this latter
+  
+  tiny_VectorNx ref;
+  ref << 0.0, 0.0;
+  work->Xref  << ref.replicate<1, NHORIZON>(); // TODO: check if this is really NHORIZON
 }
 
 Controller::~Controller(){};
@@ -49,9 +54,12 @@ float Controller::controlLaw(BLA::Matrix<systemOrder,1> currentState){
 
     // 1. Update measurement
     tiny_set_x0(this->solver, this->x);
-
+    long int before = micros();
     // 2. Solve MPC problem
     tiny_solve(this->solver);
+    mpcTime = double(micros() - before)/1000.0;
+    if (mpcTime > WCET)
+      WCET = mpcTime;
 
     return this->work->u.col(0)[0];
   }

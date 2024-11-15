@@ -14,6 +14,10 @@ void printXYu(){
   Serial.printf("X:%f,Y:%f,uX:%f,uY:%f\n", statesX(0) * 100, statesY(0) * 100, uDegreeX, uDegreeY);
 }
 
+void printXYut(){
+  Serial.printf("X:%f,Y:%f,uX:%f,uY:%f,t:%f,w:%f\n", statesX(0) * 100, statesY(0) * 100, uDegreeX, uDegreeY, mpcTime, WCET);
+}
+
 void sendKalmanData(){
   Serial.printf("%f,%f,%f,%f,%f,%f,%f,%f\n", 
     coords.x,

@@ -2,12 +2,12 @@
 #define CONTROLLER_H
 
 #include <BasicLinearAlgebra.h>
-#include "tinympc/tiny_api.hpp"
+#include "tiny_api.hpp"
 
-#define NSTATES 4
+#define NSTATES 2
 #define NINPUTS 1
-#define NHORIZON 10
-#define MAX_ITERATIONS 100
+#define NHORIZON 30
+#define MAX_ITERATIONS 200
 
 typedef Matrix<tinytype, NINPUTS, NHORIZON-1> tiny_MatrixNuNhm1;
 typedef Matrix<tinytype, NSTATES, NHORIZON> tiny_MatrixNxNh;

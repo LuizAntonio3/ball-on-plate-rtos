@@ -3,9 +3,11 @@
 #include "controller.h"
 #include "kalmanFilter.h"
 #include "stateSpaceMatrices.h"
-#include "tinympc/tiny_api.hpp"
+#include "tiny_api.hpp"
 
 #define USE_MPC
+volatile double WCET = 0.0;
+volatile double mpcTime = 0.0;
 
 ServoControl servos(23, 19);
 TouchScreen ts(27, 26, 32, 33, 25);
@@ -85,6 +87,6 @@ void loop() {
     angleY = (uDegreeY) + servos.offset2;
 
     servos.moveServos(angleX , angleY);
-    printXY();
+    printXYut();
   }
 }
